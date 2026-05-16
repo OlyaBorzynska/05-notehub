@@ -13,12 +13,14 @@ export async function fetchNotes(
   searchQuery: string,
   currentPage: number,
   sortByQuery: string,
+  totalPage: number,
 ): Promise<NotesResponse> {
   const { data } = await axios.get<NotesResponse>(`/notes`, {
     params: {
       search: searchQuery,
       page: currentPage,
       sortBy: sortByQuery,
+      perPage: totalPage,
     },
     headers: {
       Authorization: `Bearer ${myKey}`,

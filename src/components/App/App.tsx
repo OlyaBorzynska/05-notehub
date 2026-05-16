@@ -5,24 +5,50 @@ import { fetchNotes } from "../../services/noteService";
 import { useState } from "react";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import Pagination from "../Pagination/Pagination";
+import Modal from "../Modal/Modal";
+import NoteForm from "../NoteForm/NoteForm";
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortByQuery, setSortByQuery] = useState("");
+  const [totalPage, setTotalPage] = useState(0);
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isCloseModal, setIsCloseModal] = useState(false);
 
   const { data, isLoading, isError, isSuccess, isFetching } = useQuery({
-    queryKey: ["notes"],
-    queryFn: () => fetchNotes(searchQuery, currentPage, sortByQuery),
+    queryKey: ["notes", searchQuery, currentPage, sortByQuery, totalPage],
+    queryFn: () => fetchNotes(searchQuery, currentPage, sortByQuery, totalPage),
     placeholderData: keepPreviousData,
   });
+
+  const handleClick = () => {
+    setIsOpenModal(true);
+  };
+  const closeModal = () => {
+    setIsCloseModal(true);
+  };
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         {/* Компонент SearchBox */}
-        {/* Пагінація */}
-        {/* Кнопка створення нотатки */}
+        {isSuccess && totalPage > 1 && (
+          <Pagination
+            totalPages={data.totalPages}
+            currentPage={currentPage}
+            onPageChange={(currentPage) => currentPage + 1}
+          />
+        )}
+        <button onClick={handleClick} className={css.button}>
+          Create note +
+        </button>
+        {isOpenModal && (
+          <Modal onClose={closeModal}>
+            <NoteForm />
+          </Modal>
+        )}
         {isSuccess && data.notes.length > 0 && <NoteList notes={data.notes} />}
         {(isLoading || isFetching) && <Loader />}
         {isError && <ErrorMessage />}
